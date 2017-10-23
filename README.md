@@ -1,6 +1,6 @@
 # glicko2
 [![glicko2 crate](https://img.shields.io/crates/v/glicko2.svg)](https://crates.io/crates/glicko2)
-
+[![glicko2 documentation](https://docs.rs/glicko2/badge.svg)](https://docs.rs/glicko2)
 ## Usage
 
 ```rust
