@@ -1,7 +1,11 @@
 # glicko2
 [![glicko2 crate](https://img.shields.io/crates/v/glicko2.svg)](https://crates.io/crates/glicko2)
 [![glicko2 documentation](https://docs.rs/glicko2/badge.svg)](https://docs.rs/glicko2)
+
+This crate implements the [glicko2 rating system](http://www.glicko.net/glicko/glicko2.pdf). It's a rating system appropriate for 1v1 games and is leveraged by many chess leagues.
 ## Usage
+
+This example comes straight from the glicko2 rating pdf:
 
 ```rust
 extern crate glicko2;
