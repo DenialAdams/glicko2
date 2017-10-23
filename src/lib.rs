@@ -22,7 +22,8 @@ pub struct GameResult {
 }
 
 impl GameResult {
-    pub fn win(player: &Glicko2Player) -> GameResult {
+    pub fn win<T: Into<Glicko2Player>>(player: T) -> GameResult {
+        let player: Glicko2Player = player.into();
         GameResult {
             opponent_rating: player.rating,
             opponent_rating_deviation: player.rating_deviation,
@@ -30,7 +31,8 @@ impl GameResult {
         }
     }
 
-    pub fn loss(player: &Glicko2Player) -> GameResult {
+    pub fn loss<T: Into<Glicko2Player>>(player: T) -> GameResult {
+        let player: Glicko2Player = player.into();
         GameResult {
             opponent_rating: player.rating,
             opponent_rating_deviation: player.rating_deviation,
@@ -38,7 +40,8 @@ impl GameResult {
         }
     }
 
-    pub fn draw(player: &Glicko2Player) -> GameResult {
+    pub fn draw<T: Into<Glicko2Player>>(player: T) -> GameResult {
+        let player: Glicko2Player = player.into();
         GameResult {
             opponent_rating: player.rating,
             opponent_rating_deviation: player.rating_deviation,
@@ -132,11 +135,12 @@ fn f(x: f64, delta: f64, rating_deviation: f64, v: f64, volatility: f64, sys_con
     fraction_one - fraction_two
 }
 
-pub fn new_rating(
-    player: &Glicko2Player,
+pub fn new_rating<T: Into<Glicko2Player> + From<Glicko2Player>>(
+    player: T,
     results: &[GameResult],
     sys_constant: f64,
-) -> Glicko2Player {
+) -> T {
+    let player: Glicko2Player = player.into();
     if !results.is_empty() {
         let v: f64 = {
             let mut sum = 0.0;
@@ -262,7 +266,7 @@ pub fn new_rating(
             rating: new_rating,
             rating_deviation: new_rd,
             volatility: new_volatility,
-        }
+        }.into()
     } else {
         let new_rd = ((player.rating_deviation * player.rating_deviation)
             + (player.volatility * player.volatility))
@@ -271,7 +275,7 @@ pub fn new_rating(
             rating: player.rating,
             rating_deviation: new_rd,
             volatility: player.volatility,
-        }
+        }.into()
     }
 }
 
@@ -288,19 +292,19 @@ mod tests {
             rating_deviation: 200.0,
         });
         let mut results: [GameResult; 3] = unsafe { ::std::mem::uninitialized() };
-        results[0] = GameResult::win(&Glicko2Player::from(GlickoPlayer {
+        results[0] = GameResult::win(GlickoPlayer {
             rating: 1400.0,
             rating_deviation: 30.0,
-        }));
-        results[1] = GameResult::loss(&Glicko2Player::from(GlickoPlayer {
+        });
+        results[1] = GameResult::loss(GlickoPlayer {
             rating: 1550.0,
             rating_deviation: 100.0,
-        }));
-        results[2] = GameResult::loss(&Glicko2Player::from(GlickoPlayer {
+        });
+        results[2] = GameResult::loss(GlickoPlayer {
             rating: 1700.0,
             rating_deviation: 300.0,
-        }));
-        let new_player = new_rating(&example_player, &results, 0.5);
+        });
+        let new_player = new_rating(example_player, &results, 0.5);
         assert!(
             Relative::new(&new_player.rating, &-0.2069)
                 .epsilon(0.0001)
