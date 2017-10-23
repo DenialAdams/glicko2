@@ -1,3 +1,6 @@
+# glicko2
+[![glicko2 crate](https://img.shields.io/crates/v/glicko2.svg)](https://crates.io/crates/glicko2)
+
 ## Usage
 
 ```rust
