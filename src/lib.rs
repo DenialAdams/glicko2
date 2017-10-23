@@ -88,10 +88,7 @@ impl From<Glicko2Player> for GlickoPlayer {
 
 impl Glicko2Player {
     pub fn unrated() -> Glicko2Player {
-        Glicko2Player::from(GlickoPlayer {
-            rating: 1500.0,
-            rating_deviation: 350.0,
-        })
+        Glicko2Player::from(GlickoPlayer::unrated())
     }
 }
 
