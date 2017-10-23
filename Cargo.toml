@@ -2,6 +2,7 @@
 name = "glicko2"
 version = "0.1.0"
 authors = ["Richard McCormack <brick@brick.codes>"]
+license = "MIT OR Apache-2.0"
 
 [dev-dependencies]
 approx = "0.1.1"
