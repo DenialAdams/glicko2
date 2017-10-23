@@ -93,7 +93,7 @@ impl Glicko2Player {
 }
 
 impl GlickoPlayer {
-    fn unrated() -> GlickoPlayer {
+    pub fn unrated() -> GlickoPlayer {
         GlickoPlayer {
             rating: 1500.0,
             rating_deviation: 350.0,
@@ -132,12 +132,17 @@ fn f(x: f64, delta: f64, rating_deviation: f64, v: f64, volatility: f64, sys_con
     fraction_one - fraction_two
 }
 
-pub fn new_rating(player: &Glicko2Player, results: &[GameResult], sys_constant: f64) -> Glicko2Player {
+pub fn new_rating(
+    player: &Glicko2Player,
+    results: &[GameResult],
+    sys_constant: f64,
+) -> Glicko2Player {
     if !results.is_empty() {
         let v: f64 = {
             let mut sum = 0.0;
             for result in results {
-                let mut p = g(result.opponent_rating_deviation) * g(result.opponent_rating_deviation);
+                let mut p =
+                    g(result.opponent_rating_deviation) * g(result.opponent_rating_deviation);
                 p *= e(
                     player.rating,
                     result.opponent_rating,
@@ -234,9 +239,9 @@ pub fn new_rating(player: &Glicko2Player, results: &[GameResult], sys_constant: 
             + (new_volatility * new_volatility))
             .sqrt();
         let new_rd = {
-            let foo = 1.0 / (new_pre_rd * new_pre_rd);
-            let bar = 1.0 / v;
-            1.0 / (foo + bar).sqrt()
+            let subexpr_1 = 1.0 / (new_pre_rd * new_pre_rd);
+            let subexpr_2 = 1.0 / v;
+            1.0 / (subexpr_1 + subexpr_2).sqrt()
         };
         let new_rating = {
             let mut sum = 0.0;
@@ -259,11 +264,13 @@ pub fn new_rating(player: &Glicko2Player, results: &[GameResult], sys_constant: 
             volatility: new_volatility,
         }
     } else {
-        let new_rd = ((player.rating_deviation * player.rating_deviation) + (player.volatility * player.volatility)).sqrt();
+        let new_rd = ((player.rating_deviation * player.rating_deviation)
+            + (player.volatility * player.volatility))
+            .sqrt();
         Glicko2Player {
             rating: player.rating,
             rating_deviation: new_rd,
-            volatility: player.volatility
+            volatility: player.volatility,
         }
     }
 }
