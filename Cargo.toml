@@ -1,0 +1,8 @@
+[package]
+name = "glicko2"
+version = "0.1.0"
+authors = ["Richard McCormack <brick@brick.codes>"]
+
+[dev-dependencies]
+approx = "0.1.1"
+
