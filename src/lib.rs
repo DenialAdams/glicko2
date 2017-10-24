@@ -1,5 +1,6 @@
 const CONVERGENCE_TOLERANCE: f64 = 0.000001;
 
+/// Represents the rating of a player on the Glicko2 scale.
 #[derive(Clone, Copy, Debug)]
 pub struct Glicko2Player {
     pub rating: f64,
@@ -7,12 +8,19 @@ pub struct Glicko2Player {
     pub volatility: f64,
 }
 
+/// Represents the rating of a player on the Glicko (not glicko2) scale.
+/// Glicko2 rating numbers tend to be less friendly for humans,
+/// so it's common to convert ratings to the Glicko scale before display.
 #[derive(Clone, Copy, Debug)]
 pub struct GlickoPlayer {
     pub rating: f64,
     pub rating_deviation: f64,
 }
 
+/// Represents a result (win, loss, or draw) over an opposing player.
+/// Note well that only the opponent is stored in a `GameResult`.
+/// The player that actually won, lost or drew respectively is not stored
+/// in the game result, but instead is passed in to [new_rating](fn.new_rating.html).
 #[derive(Clone, Copy, Debug)]
 pub struct GameResult {
     // GLICKO2
@@ -22,6 +30,7 @@ pub struct GameResult {
 }
 
 impl GameResult {
+    /// Constructs a new game result representing a win over `player`.
     pub fn win<T: Into<Glicko2Player>>(player: T) -> GameResult {
         let player: Glicko2Player = player.into();
         GameResult {
@@ -31,6 +40,7 @@ impl GameResult {
         }
     }
 
+    /// Constructs a new game result representing a loss to `player`.
     pub fn loss<T: Into<Glicko2Player>>(player: T) -> GameResult {
         let player: Glicko2Player = player.into();
         GameResult {
@@ -40,6 +50,7 @@ impl GameResult {
         }
     }
 
+    /// Constructs a new game result representing a draw with `player`.
     pub fn draw<T: Into<Glicko2Player>>(player: T) -> GameResult {
         let player: Glicko2Player = player.into();
         GameResult {
@@ -87,12 +98,14 @@ impl From<Glicko2Player> for GlickoPlayer {
 }
 
 impl Glicko2Player {
+    /// Constructs a `Glicko2Player` using the defaults for a new (unrated) player.
     pub fn unrated() -> Glicko2Player {
         Glicko2Player::from(GlickoPlayer::unrated())
     }
 }
 
 impl GlickoPlayer {
+    /// Constructs a `GlickoPlayer` using the defaults for a new (unrated) player.
     pub fn unrated() -> GlickoPlayer {
         GlickoPlayer {
             rating: 1500.0,
@@ -132,6 +145,14 @@ fn f(x: f64, delta: f64, rating_deviation: f64, v: f64, volatility: f64, sys_con
     fraction_one - fraction_two
 }
 
+/// Generate a new Rating from an existing rating and a series of results.
+/// `sys_constant` is best explained in the words of Mark Glickman himself:
+/// > The system constant, τ, which constrains the change in volatility over time, needs to be
+/// > set prior to application of the system. Reasonable choices are between 0.3 and 1.2,
+/// > though the system should be tested to decide which value results in greatest predictive
+/// > accuracy. Smaller values of τ prevent the volatility measures from changing by large
+/// > amounts, which in turn prevent enormous changes in ratings based on very improbable
+/// > results.
 pub fn new_rating<T: Into<Glicko2Player> + From<Glicko2Player>>(
     player: T,
     results: &[GameResult],
