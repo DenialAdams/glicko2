@@ -17,7 +17,7 @@ fn main() {
         rating: 1500.0,
         rating_deviation: 200.0,
     };
-    let mut results = vec!();
+    let mut results = vec![];
     results.push(GameResult::win(GlickoPlayer {
         rating: 1400.0,
         rating_deviation: 30.0,
