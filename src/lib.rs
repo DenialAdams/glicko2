@@ -309,19 +309,19 @@ mod tests {
             rating: 1500.0,
             rating_deviation: 200.0,
         });
-        let mut results: [GameResult; 3] = unsafe { ::std::mem::uninitialized() };
-        results[0] = GameResult::win(GlickoPlayer {
+        let mut results = vec![];
+        results.push(GameResult::win(GlickoPlayer {
             rating: 1400.0,
             rating_deviation: 30.0,
-        });
-        results[1] = GameResult::loss(GlickoPlayer {
+        }));
+        results.push(GameResult::loss(GlickoPlayer {
             rating: 1550.0,
             rating_deviation: 100.0,
-        });
-        results[2] = GameResult::loss(GlickoPlayer {
+        }));
+        results.push(GameResult::loss(GlickoPlayer {
             rating: 1700.0,
             rating_deviation: 300.0,
-        });
+        }));
         let new_player = new_rating(example_player, &results, 0.5);
         assert!(
             Relative::new(&new_player.rating, &-0.2069)
