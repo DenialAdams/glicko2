@@ -26,7 +26,7 @@ pub struct GameResult {
     // GLICKO2
     opponent_rating: f64,
     opponent_rating_deviation: f64,
-    score: Score,
+    score: f64,
 }
 
 impl GameResult {
@@ -36,7 +36,7 @@ impl GameResult {
         GameResult {
             opponent_rating: player.rating,
             opponent_rating_deviation: player.rating_deviation,
-            score: Score::Win,
+            score: 1.0,
         }
     }
 
@@ -46,7 +46,7 @@ impl GameResult {
         GameResult {
             opponent_rating: player.rating,
             opponent_rating_deviation: player.rating_deviation,
-            score: Score::Loss,
+            score: 0.0,
         }
     }
 
@@ -56,24 +56,7 @@ impl GameResult {
         GameResult {
             opponent_rating: player.rating,
             opponent_rating_deviation: player.rating_deviation,
-            score: Score::Draw,
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-enum Score {
-    Win,
-    Loss,
-    Draw,
-}
-
-impl Into<f64> for Score {
-    fn into(self) -> f64 {
-        match self {
-            Score::Win => 1.0,
-            Score::Draw => 0.5,
-            Score::Loss => 0.0,
+            score: 0.5,
         }
     }
 }
@@ -146,6 +129,7 @@ fn f(x: f64, delta: f64, rating_deviation: f64, v: f64, volatility: f64, sys_con
 }
 
 /// Generate a new Rating from an existing rating and a series of results.
+///
 /// `sys_constant` is best explained in the words of Mark Glickman himself:
 /// > The system constant, τ, which constrains the change in volatility over time, needs to be
 /// > set prior to application of the system. Reasonable choices are between 0.3 and 1.2,
@@ -184,13 +168,12 @@ pub fn new_rating<T: Into<Glicko2Player> + From<Glicko2Player>>(
             let mut sum = 0.0;
             for result in results {
                 let mut p = g(result.opponent_rating_deviation);
-                let score: f64 = result.score.into();
-                p *= score
+                p *= result.score
                     - e(
                         player.rating,
                         result.opponent_rating,
                         result.opponent_rating_deviation,
-                    );;
+                    );
                 sum += p;
             }
             v * sum
@@ -269,8 +252,7 @@ pub fn new_rating<T: Into<Glicko2Player> + From<Glicko2Player>>(
             let mut sum = 0.0;
             for result in results {
                 let mut p = g(result.opponent_rating_deviation);
-                let score: f64 = result.score.into();
-                p *= score
+                p *= result.score
                     - e(
                         player.rating,
                         result.opponent_rating,
