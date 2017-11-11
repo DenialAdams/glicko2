@@ -145,38 +145,33 @@ pub fn new_rating<T: Into<Glicko2Player> + From<Glicko2Player>>(
     let player: Glicko2Player = player.into();
     if !results.is_empty() {
         let v: f64 = {
-            let mut sum = 0.0;
-            for result in results {
-                let mut p =
-                    g(result.opponent_rating_deviation) * g(result.opponent_rating_deviation);
-                p *= e(
-                    player.rating,
-                    result.opponent_rating,
-                    result.opponent_rating_deviation,
-                );
-                p *= 1.0
-                    - e(
-                        player.rating,
-                        result.opponent_rating,
-                        result.opponent_rating_deviation,
-                    );
-                sum += p;
-            }
-            1.0 / sum
+            1.0 / results.iter().fold(0.0, |acc, result| {
+                acc
+                    + g(result.opponent_rating_deviation) * g(result.opponent_rating_deviation)
+                        * e(
+                            player.rating,
+                            result.opponent_rating,
+                            result.opponent_rating_deviation,
+                        )
+                        * (1.0
+                            - e(
+                                player.rating,
+                                result.opponent_rating,
+                                result.opponent_rating_deviation,
+                            ))
+            })
         };
         let delta = {
-            let mut sum = 0.0;
-            for result in results {
-                let mut p = g(result.opponent_rating_deviation);
-                p *= result.score
-                    - e(
-                        player.rating,
-                        result.opponent_rating,
-                        result.opponent_rating_deviation,
-                    );
-                sum += p;
-            }
-            v * sum
+            v * results.iter().fold(0.0, |acc, result| {
+                acc
+                    + g(result.opponent_rating_deviation)
+                        * (result.score
+                            - e(
+                                player.rating,
+                                result.opponent_rating,
+                                result.opponent_rating_deviation,
+                            ))
+            })
         };
         let new_volatility = {
             let mut a = (player.volatility * player.volatility).ln();
@@ -249,18 +244,16 @@ pub fn new_rating<T: Into<Glicko2Player> + From<Glicko2Player>>(
             1.0 / (subexpr_1 + subexpr_2).sqrt()
         };
         let new_rating = {
-            let mut sum = 0.0;
-            for result in results {
-                let mut p = g(result.opponent_rating_deviation);
-                p *= result.score
-                    - e(
-                        player.rating,
-                        result.opponent_rating,
-                        result.opponent_rating_deviation,
-                    );
-                sum += p;
-            }
-            player.rating + ((new_rd * new_rd) * sum)
+            player.rating + ((new_rd * new_rd) * results.iter().fold(0.0, |acc, &result| {
+                acc
+                    + g(result.opponent_rating_deviation)
+                        * (result.score
+                            - e(
+                                player.rating,
+                                result.opponent_rating,
+                                result.opponent_rating_deviation,
+                            ))
+            }))
         };
         Glicko2Player {
             rating: new_rating,
