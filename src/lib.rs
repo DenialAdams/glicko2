@@ -157,21 +157,24 @@ pub fn new_rating<T: Into<Glicko2Player> + From<Glicko2Player>>(
     let player: Glicko2Player = player.into();
     if !results.is_empty() {
         let v: f64 = {
-            results.iter().fold(0.0, |acc, result| {
-                acc
-                    + g(result.opponent_rating_deviation) * g(result.opponent_rating_deviation)
-                        * e(
-                            player.rating,
-                            result.opponent_rating,
-                            result.opponent_rating_deviation,
-                        )
-                        * (1.0
-                            - e(
+            results
+                .iter()
+                .fold(0.0, |acc, result| {
+                    acc
+                        + g(result.opponent_rating_deviation) * g(result.opponent_rating_deviation)
+                            * e(
                                 player.rating,
                                 result.opponent_rating,
                                 result.opponent_rating_deviation,
-                            ))
-            }).recip()
+                            )
+                            * (1.0
+                                - e(
+                                    player.rating,
+                                    result.opponent_rating,
+                                    result.opponent_rating_deviation,
+                                ))
+                })
+                .recip()
         };
         let delta = {
             v * results.iter().fold(0.0, |acc, result| {
