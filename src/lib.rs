@@ -9,6 +9,7 @@ pub struct Glicko2Player {
 }
 
 /// Represents the rating of a player on the Glicko (not glicko2) scale.
+/// 
 /// Glicko2 rating numbers tend to be less friendly for humans,
 /// so it's common to convert ratings to the Glicko scale before display.
 #[derive(Clone, Copy, Debug)]
@@ -18,6 +19,7 @@ pub struct GlickoPlayer {
 }
 
 /// Represents a result (win, loss, or draw) over an opposing player.
+/// 
 /// Note well that only the opponent is stored in a `GameResult`.
 /// The player that actually won, lost or drew respectively is not stored
 /// in the game result, but instead is passed in to [new_rating](fn.new_rating.html).
