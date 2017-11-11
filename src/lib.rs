@@ -104,12 +104,12 @@ impl GlickoPlayer {
 fn g(rating_deviation: f64) -> f64 {
     use std::f64::consts::PI;
     let denom = 1.0 + ((3.0 * rating_deviation * rating_deviation) / (PI * PI));
-    1.0 / denom.sqrt()
+    denom.sqrt().recip()
 }
 
 fn e(rating: f64, other_rating: f64, other_rating_deviation: f64) -> f64 {
     let base = -1.0 * g(other_rating_deviation) * (rating - other_rating);
-    1.0 / (1.0 + base.exp())
+    (1.0 + base.exp()).recip()
 }
 
 fn f(x: f64, delta: f64, rating_deviation: f64, v: f64, volatility: f64, sys_constant: f64) -> f64 {
@@ -145,7 +145,7 @@ pub fn new_rating<T: Into<Glicko2Player> + From<Glicko2Player>>(
     let player: Glicko2Player = player.into();
     if !results.is_empty() {
         let v: f64 = {
-            1.0 / results.iter().fold(0.0, |acc, result| {
+            results.iter().fold(0.0, |acc, result| {
                 acc
                     + g(result.opponent_rating_deviation) * g(result.opponent_rating_deviation)
                         * e(
@@ -159,7 +159,7 @@ pub fn new_rating<T: Into<Glicko2Player> + From<Glicko2Player>>(
                                 result.opponent_rating,
                                 result.opponent_rating_deviation,
                             ))
-            })
+            }).recip()
         };
         let delta = {
             v * results.iter().fold(0.0, |acc, result| {
@@ -239,9 +239,9 @@ pub fn new_rating<T: Into<Glicko2Player> + From<Glicko2Player>>(
             + (new_volatility * new_volatility))
             .sqrt();
         let new_rd = {
-            let subexpr_1 = 1.0 / (new_pre_rd * new_pre_rd);
-            let subexpr_2 = 1.0 / v;
-            1.0 / (subexpr_1 + subexpr_2).sqrt()
+            let subexpr_1 = (new_pre_rd * new_pre_rd).recip();
+            let subexpr_2 = v.recip();
+            (subexpr_1 + subexpr_2).sqrt().recip()
         };
         let new_rating = {
             player.rating + ((new_rd * new_rd) * results.iter().fold(0.0, |acc, &result| {
