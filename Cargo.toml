@@ -1,6 +1,6 @@
 [package]
 name = "glicko2"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Richard McCormack <brick@brick.codes>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/DenialAdams/glicko2"

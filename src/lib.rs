@@ -97,6 +97,18 @@ impl GlickoPlayer {
     }
 }
 
+impl Default for Glicko2Player {
+    fn default() -> Glicko2Player {
+        Glicko2Player::unrated()
+    }
+}
+
+impl Default for GlickoPlayer {
+    fn default() -> GlickoPlayer {
+        GlickoPlayer::unrated()
+    }
+}
+
 // The rest is best read with a copy of the glicko2 example PDF;
 // I've tried to keep naming somewhat consistent
 // http://www.glicko.net/glicko/glicko2.pdf
