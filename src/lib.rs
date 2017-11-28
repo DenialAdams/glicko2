@@ -8,8 +8,8 @@ pub struct Glicko2Player {
     pub volatility: f64,
 }
 
-/// Represents the rating of a player on the Glicko (not glicko2) scale.
-/// 
+/// Represents the rating of a player on the Glicko (not Glicko2) scale.
+///
 /// Glicko2 rating numbers tend to be less friendly for humans,
 /// so it's common to convert ratings to the Glicko scale before display.
 #[derive(Clone, Copy, Debug)]
@@ -19,10 +19,10 @@ pub struct GlickoPlayer {
 }
 
 /// Represents a result (win, loss, or draw) over an opposing player.
-/// 
+///
 /// Note well that only the opponent is stored in a `GameResult`.
 /// The player that actually won, lost or drew respectively is not stored
-/// in the game result, but instead is passed in to [new_rating](fn.new_rating.html).
+/// in the game result, but instead is passed in to [`new_rating`](fn.new_rating.html).
 #[derive(Clone, Copy, Debug)]
 pub struct GameResult {
     // GLICKO2
@@ -142,7 +142,11 @@ fn f(x: f64, delta: f64, rating_deviation: f64, v: f64, volatility: f64, sys_con
     fraction_one - fraction_two
 }
 
-/// Generate a new Rating from an existing rating and a series of results.
+/// Calculates a new rating from an existing rating and a series of results.
+///
+/// A `GlickoPlayer` or a `Glicko2Player` can be passed in as the player, but a `Glicko2Player`
+/// is always returned. Converting back to a `GlickoPlayer` and thus losing data is left up
+/// to the caller. Generally, converting back to a `GlickoPlayer` is only needed for display purposes.
 ///
 /// `sys_constant` is best explained in the words of Mark Glickman himself:
 /// > The system constant, τ, which constrains the change in volatility over time, needs to be
@@ -151,11 +155,11 @@ fn f(x: f64, delta: f64, rating_deviation: f64, v: f64, volatility: f64, sys_con
 /// > accuracy. Smaller values of τ prevent the volatility measures from changing by large
 /// > amounts, which in turn prevent enormous changes in ratings based on very improbable
 /// > results.
-pub fn new_rating<T: Into<Glicko2Player> + From<Glicko2Player>>(
+pub fn new_rating<T: Into<Glicko2Player>>(
     player: T,
     results: &[GameResult],
     sys_constant: f64,
-) -> T {
+) -> Glicko2Player {
     let player: Glicko2Player = player.into();
     if !results.is_empty() {
         let v: f64 = {
@@ -276,7 +280,7 @@ pub fn new_rating<T: Into<Glicko2Player> + From<Glicko2Player>>(
             rating: new_rating,
             rating_deviation: new_rd,
             volatility: new_volatility,
-        }.into()
+        }
     } else {
         let new_rd = ((player.rating_deviation * player.rating_deviation)
             + (player.volatility * player.volatility))
@@ -285,7 +289,7 @@ pub fn new_rating<T: Into<Glicko2Player> + From<Glicko2Player>>(
             rating: player.rating,
             rating_deviation: new_rd,
             volatility: player.volatility,
-        }.into()
+        }
     }
 }
 

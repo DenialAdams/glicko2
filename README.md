@@ -30,10 +30,11 @@ fn main() {
         rating: 1700.0,
         rating_deviation: 300.0,
     }));
-    // Because we pass in a GlickoPlayer instead of a Glicko2Player, we get a GlickoPlayer back.
-    // This means that we lose the volatility field.
-    // If you want to preserve volatility (i.e. use Glicko2), pass in a Glicko2Player instead.
-    let new_player = glicko2::new_rating(example_player, &results, 0.5);
+    // We are converting the result of new_rating to a GlickoPlayer immediately, throwing away the
+    // benefits of Glicko2 over Glicko for the sake of matching the example in the glicko2 pdf.
+    // In a real application, you'd likely want to save the Glicko2Player and convert to
+    // GlickoPlayer for display purposes only.
+    let new_player: GlickoPlayer = glicko2::new_rating(example_player, &results, 0.5).into();
     println!(
         "New rating: {} New rating deviation: {}",
         new_player.rating,
