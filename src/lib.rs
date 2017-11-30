@@ -35,7 +35,7 @@ impl GameResult {
     /// Constructs a new game result representing a win over a player or team
     /// with rating `opponent_rating`.
     ///
-    /// A Glicko2Rating or GlickoRating can be supplied for `opponent_rating`,
+    /// A `Glicko2Rating` or `GlickoRating` can be supplied for `opponent_rating`,
     /// and it will not affect the result of rating calculations
     /// as the volatility of opponents are not looked at for updating ratings.
     pub fn win<T: Into<Glicko2Rating>>(opponent_rating: T) -> GameResult {
@@ -50,7 +50,7 @@ impl GameResult {
     /// Constructs a new game result representing a loss to a player or team
     /// with rating `opponent_rating`.
     ///
-    /// A Glicko2Rating or GlickoRating can be supplied for `opponent_rating`,
+    /// A `Glicko2Rating` or `GlickoRating` can be supplied for `opponent_rating`,
     /// and it will not affect the result of rating calculations
     /// as the volatility of opponents are not looked at for updating ratings.
     pub fn loss<T: Into<Glicko2Rating>>(opponent_rating: T) -> GameResult {
@@ -65,7 +65,7 @@ impl GameResult {
     /// Constructs a new game result representing a draw with a player or team
     /// with rating `opponent_rating`.
     ///
-    /// A Glicko2Rating or GlickoRating can be supplied for `opponent_rating`,
+    /// A `Glicko2Rating` or `GlickoRating` can be supplied for `opponent_rating`,
     /// and it will not affect the result of rating calculations
     /// as the volatility of opponents are not looked at for updating ratings.
     pub fn draw<T: Into<Glicko2Rating>>(opponent_rating: T) -> GameResult {
