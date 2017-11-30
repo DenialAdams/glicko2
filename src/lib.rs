@@ -1,24 +1,24 @@
 const CONVERGENCE_TOLERANCE: f64 = 0.000001;
 
-/// Represents the rating of a player on the Glicko2 scale.
+/// Represents the rating of a player or team on the Glicko2 scale.
 #[derive(Clone, Copy, Debug)]
-pub struct Glicko2Player {
-    pub rating: f64,
-    pub rating_deviation: f64,
+pub struct Glicko2Rating {
+    pub value: f64,
+    pub deviation: f64,
     pub volatility: f64,
 }
 
-/// Represents the rating of a player on the Glicko (not Glicko2) scale.
+/// Represents the rating of a player or team on the Glicko (not Glicko2) scale.
 ///
 /// Glicko2 rating numbers tend to be less friendly for humans,
 /// so it's common to convert ratings to the Glicko scale before display.
 #[derive(Clone, Copy, Debug)]
-pub struct GlickoPlayer {
-    pub rating: f64,
-    pub rating_deviation: f64,
+pub struct GlickoRating {
+    pub value: f64,
+    pub deviation: f64,
 }
 
-/// Represents a result (win, loss, or draw) over an opposing player.
+/// Represents a result (win, loss, or draw) over an opposing player or team.
 ///
 /// Note well that only the opponent is stored in a `GameResult`.
 /// The player that actually won, lost or drew respectively is not stored
@@ -26,94 +26,113 @@ pub struct GlickoPlayer {
 #[derive(Clone, Copy, Debug)]
 pub struct GameResult {
     // GLICKO2
-    opponent_rating: f64,
+    opponent_rating_value: f64,
     opponent_rating_deviation: f64,
     score: f64,
 }
 
 impl GameResult {
-    /// Constructs a new game result representing a win over `player`.
-    pub fn win<T: Into<Glicko2Player>>(player: T) -> GameResult {
-        let player: Glicko2Player = player.into();
+    /// Constructs a new game result representing a win over a player or team
+    /// with rating `opponent_rating`.
+    ///
+    /// A Glicko2Rating or GlickoRating can be supplied for `opponent_rating`,
+    /// and it will not affect the result of rating calculations
+    /// as the volatility of opponents are not looked at for updating ratings.
+    pub fn win<T: Into<Glicko2Rating>>(opponent_rating: T) -> GameResult {
+        let opponent_glicko2: Glicko2Rating = opponent_rating.into();
         GameResult {
-            opponent_rating: player.rating,
-            opponent_rating_deviation: player.rating_deviation,
+            opponent_rating_value: opponent_glicko2.value,
+            opponent_rating_deviation: opponent_glicko2.deviation,
             score: 1.0,
         }
     }
 
-    /// Constructs a new game result representing a loss to `player`.
-    pub fn loss<T: Into<Glicko2Player>>(player: T) -> GameResult {
-        let player: Glicko2Player = player.into();
+    /// Constructs a new game result representing a loss to a player or team
+    /// with rating `opponent_rating`.
+    ///
+    /// A Glicko2Rating or GlickoRating can be supplied for `opponent_rating`,
+    /// and it will not affect the result of rating calculations
+    /// as the volatility of opponents are not looked at for updating ratings.
+    pub fn loss<T: Into<Glicko2Rating>>(opponent_rating: T) -> GameResult {
+        let opponent_glicko2: Glicko2Rating = opponent_rating.into();
         GameResult {
-            opponent_rating: player.rating,
-            opponent_rating_deviation: player.rating_deviation,
+            opponent_rating_value: opponent_glicko2.value,
+            opponent_rating_deviation: opponent_glicko2.deviation,
             score: 0.0,
         }
     }
 
-    /// Constructs a new game result representing a draw with `player`.
-    pub fn draw<T: Into<Glicko2Player>>(player: T) -> GameResult {
-        let player: Glicko2Player = player.into();
+    /// Constructs a new game result representing a draw with a player or team
+    /// with rating `opponent_rating`.
+    ///
+    /// A Glicko2Rating or GlickoRating can be supplied for `opponent_rating`,
+    /// and it will not affect the result of rating calculations
+    /// as the volatility of opponents are not looked at for updating ratings.
+    pub fn draw<T: Into<Glicko2Rating>>(opponent_rating: T) -> GameResult {
+        let opponent_glicko2: Glicko2Rating = opponent_rating.into();
         GameResult {
-            opponent_rating: player.rating,
-            opponent_rating_deviation: player.rating_deviation,
+            opponent_rating_value: opponent_glicko2.value,
+            opponent_rating_deviation: opponent_glicko2.deviation,
             score: 0.5,
         }
     }
 }
 
-impl From<GlickoPlayer> for Glicko2Player {
-    fn from(player: GlickoPlayer) -> Glicko2Player {
-        Glicko2Player {
-            rating: (player.rating - 1500.0) / 173.7178,
-            rating_deviation: player.rating_deviation / 173.7178,
+impl From<GlickoRating> for Glicko2Rating {
+    fn from(rating: GlickoRating) -> Glicko2Rating {
+        Glicko2Rating {
+            value: (rating.value - 1500.0) / 173.7178,
+            deviation: rating.deviation / 173.7178,
             volatility: 0.06,
         }
     }
 }
 
-impl From<Glicko2Player> for GlickoPlayer {
-    fn from(player: Glicko2Player) -> GlickoPlayer {
-        GlickoPlayer {
-            rating: player.rating * 173.7178 + 1500.0,
-            rating_deviation: player.rating_deviation * 173.7178,
+impl From<Glicko2Rating> for GlickoRating {
+    fn from(rating: Glicko2Rating) -> GlickoRating {
+        GlickoRating {
+            value: rating.value * 173.7178 + 1500.0,
+            deviation: rating.deviation * 173.7178,
         }
     }
 }
 
-impl Glicko2Player {
-    /// Constructs a `Glicko2Player` using the defaults for a new (unrated) player.
-    pub fn unrated() -> Glicko2Player {
-        Glicko2Player::from(GlickoPlayer::unrated())
+impl Glicko2Rating {
+    /// Constructs a `Glicko2Rating` using the defaults for a new (unrated) player or team.
+    pub fn unrated() -> Glicko2Rating {
+        Glicko2Rating::from(GlickoRating::unrated())
     }
 }
 
-impl GlickoPlayer {
-    /// Constructs a `GlickoPlayer` using the defaults for a new (unrated) player.
-    pub fn unrated() -> GlickoPlayer {
-        GlickoPlayer {
-            rating: 1500.0,
-            rating_deviation: 350.0,
+impl GlickoRating {
+    /// Constructs a `GlickoRating` using the defaults for a new (unrated) player or team.
+    pub fn unrated() -> GlickoRating {
+        GlickoRating {
+            value: 1500.0,
+            deviation: 350.0,
         }
     }
 }
 
-impl Default for Glicko2Player {
-    fn default() -> Glicko2Player {
-        Glicko2Player::unrated()
+impl Default for Glicko2Rating {
+    fn default() -> Glicko2Rating {
+        Glicko2Rating::unrated()
     }
 }
 
-impl Default for GlickoPlayer {
-    fn default() -> GlickoPlayer {
-        GlickoPlayer::unrated()
+impl Default for GlickoRating {
+    fn default() -> GlickoRating {
+        GlickoRating::unrated()
     }
 }
 
 // The rest is best read with a copy of the glicko2 example PDF;
 // I've tried to keep naming somewhat consistent
 // http://www.glicko.net/glicko/glicko2.pdf
+// One difference is that what is referred to in the pdf as 'player'
+// I am referring to as a `rating`, and what is referred to as `rating`
+// I am referring to as a `value`. I think that these changes make
+// the API more clear, hopefully it's not too confusing.
 
 fn g(rating_deviation: f64) -> f64 {
     use std::f64::consts::PI;
@@ -144,9 +163,12 @@ fn f(x: f64, delta: f64, rating_deviation: f64, v: f64, volatility: f64, sys_con
 
 /// Calculates a new rating from an existing rating and a series of results.
 ///
-/// A `GlickoPlayer` or a `Glicko2Player` can be passed in as the player, but a `Glicko2Player`
-/// is always returned. Converting back to a `GlickoPlayer` and thus losing data is left up
-/// to the caller. Generally, converting back to a `GlickoPlayer` is only needed for display purposes.
+/// Unlike `GameResult`s, which can be constructed with a `Glicko2Rating` or a`GlickoRating`,
+/// `new_rating` requires a `Glicko2Rating`. This is because the volatility field present only in
+/// `Glicko2Rating` affects the result of the calculation. Using a default volatility can be done,
+/// but must be made explicit at the call site using the `Into<GlickoRating>` impl.
+/// Similarly, converting the final result back to a `GlickoRating` and thus losing data is left to
+/// the caller. Generally, converting back to a `GlickoRating` is only needed for display purposes.
 ///
 /// `sys_constant` is best explained in the words of Mark Glickman himself:
 /// > The system constant, τ, which constrains the change in volatility over time, needs to be
@@ -155,12 +177,11 @@ fn f(x: f64, delta: f64, rating_deviation: f64, v: f64, volatility: f64, sys_con
 /// > accuracy. Smaller values of τ prevent the volatility measures from changing by large
 /// > amounts, which in turn prevent enormous changes in ratings based on very improbable
 /// > results.
-pub fn new_rating<T: Into<Glicko2Player>>(
-    player: T,
+pub fn new_rating(
+    prior_rating: Glicko2Rating,
     results: &[GameResult],
     sys_constant: f64,
-) -> Glicko2Player {
-    let player: Glicko2Player = player.into();
+) -> Glicko2Rating {
     if !results.is_empty() {
         let v: f64 = {
             results
@@ -169,14 +190,14 @@ pub fn new_rating<T: Into<Glicko2Player>>(
                     acc
                         + g(result.opponent_rating_deviation) * g(result.opponent_rating_deviation)
                             * e(
-                                player.rating,
-                                result.opponent_rating,
+                                prior_rating.value,
+                                result.opponent_rating_value,
                                 result.opponent_rating_deviation,
                             )
                             * (1.0
                                 - e(
-                                    player.rating,
-                                    result.opponent_rating,
+                                    prior_rating.value,
+                                    result.opponent_rating_value,
                                     result.opponent_rating_deviation,
                                 ))
                 })
@@ -188,16 +209,16 @@ pub fn new_rating<T: Into<Glicko2Player>>(
                     + g(result.opponent_rating_deviation)
                         * (result.score
                             - e(
-                                player.rating,
-                                result.opponent_rating,
+                                prior_rating.value,
+                                result.opponent_rating_value,
                                 result.opponent_rating_deviation,
                             ))
             })
         };
         let new_volatility = {
-            let mut a = (player.volatility * player.volatility).ln();
+            let mut a = (prior_rating.volatility * prior_rating.volatility).ln();
             let delta_squared = delta * delta;
-            let rd_squared = player.rating_deviation * player.rating_deviation;
+            let rd_squared = prior_rating.deviation * prior_rating.deviation;
             let mut b = if delta_squared > rd_squared + v {
                 delta_squared - rd_squared - v
             } else {
@@ -205,9 +226,9 @@ pub fn new_rating<T: Into<Glicko2Player>>(
                 while f(
                     a - k * sys_constant,
                     delta,
-                    player.rating_deviation,
+                    prior_rating.deviation,
                     v,
-                    player.volatility,
+                    prior_rating.volatility,
                     sys_constant,
                 ) < 0.0
                 {
@@ -218,17 +239,17 @@ pub fn new_rating<T: Into<Glicko2Player>>(
             let mut fa = f(
                 a,
                 delta,
-                player.rating_deviation,
+                prior_rating.deviation,
                 v,
-                player.volatility,
+                prior_rating.volatility,
                 sys_constant,
             );
             let mut fb = f(
                 b,
                 delta,
-                player.rating_deviation,
+                prior_rating.deviation,
                 v,
-                player.volatility,
+                prior_rating.volatility,
                 sys_constant,
             );
             while (b - a).abs() > CONVERGENCE_TOLERANCE {
@@ -237,9 +258,9 @@ pub fn new_rating<T: Into<Glicko2Player>>(
                 let fc = f(
                     c,
                     delta,
-                    player.rating_deviation,
+                    prior_rating.deviation,
                     v,
-                    player.volatility,
+                    prior_rating.volatility,
                     sys_constant,
                 );
                 // b
@@ -256,7 +277,7 @@ pub fn new_rating<T: Into<Glicko2Player>>(
             }
             (a / 2.0).exp()
         };
-        let new_pre_rd = ((player.rating_deviation * player.rating_deviation)
+        let new_pre_rd = ((prior_rating.deviation * prior_rating.deviation)
             + (new_volatility * new_volatility))
             .sqrt();
         let new_rd = {
@@ -265,30 +286,30 @@ pub fn new_rating<T: Into<Glicko2Player>>(
             (subexpr_1 + subexpr_2).sqrt().recip()
         };
         let new_rating = {
-            player.rating + ((new_rd * new_rd) * results.iter().fold(0.0, |acc, &result| {
+            prior_rating.value + ((new_rd * new_rd) * results.iter().fold(0.0, |acc, &result| {
                 acc
                     + g(result.opponent_rating_deviation)
                         * (result.score
                             - e(
-                                player.rating,
-                                result.opponent_rating,
+                                prior_rating.value,
+                                result.opponent_rating_value,
                                 result.opponent_rating_deviation,
                             ))
             }))
         };
-        Glicko2Player {
-            rating: new_rating,
-            rating_deviation: new_rd,
+        Glicko2Rating {
+            value: new_rating,
+            deviation: new_rd,
             volatility: new_volatility,
         }
     } else {
-        let new_rd = ((player.rating_deviation * player.rating_deviation)
-            + (player.volatility * player.volatility))
+        let new_rd = ((prior_rating.deviation * prior_rating.deviation)
+            + (prior_rating.volatility * prior_rating.volatility))
             .sqrt();
-        Glicko2Player {
-            rating: player.rating,
-            rating_deviation: new_rd,
-            volatility: player.volatility,
+        Glicko2Rating {
+            value: prior_rating.value,
+            deviation: new_rd,
+            volatility: prior_rating.volatility,
         }
     }
 }
@@ -301,36 +322,36 @@ mod tests {
 
     #[test]
     fn test_rating_update() {
-        let example_player = Glicko2Player::from(GlickoPlayer {
-            rating: 1500.0,
-            rating_deviation: 200.0,
+        let example_player_rating = Glicko2Rating::from(GlickoRating {
+            value: 1500.0,
+            deviation: 200.0,
         });
         let mut results = vec![];
-        results.push(GameResult::win(GlickoPlayer {
-            rating: 1400.0,
-            rating_deviation: 30.0,
+        results.push(GameResult::win(GlickoRating {
+            value: 1400.0,
+            deviation: 30.0,
         }));
-        results.push(GameResult::loss(GlickoPlayer {
-            rating: 1550.0,
-            rating_deviation: 100.0,
+        results.push(GameResult::loss(GlickoRating {
+            value: 1550.0,
+            deviation: 100.0,
         }));
-        results.push(GameResult::loss(GlickoPlayer {
-            rating: 1700.0,
-            rating_deviation: 300.0,
+        results.push(GameResult::loss(GlickoRating {
+            value: 1700.0,
+            deviation: 300.0,
         }));
-        let new_player = new_rating(example_player, &results, 0.5);
+        let new_rating = new_rating(example_player_rating, &results, 0.5);
         assert!(
-            Relative::new(&new_player.rating, &-0.2069)
+            Relative::new(&new_rating.value, &-0.2069)
                 .epsilon(0.0001)
                 .eq()
         );
         assert!(
-            Relative::new(&new_player.rating_deviation, &0.8722)
+            Relative::new(&new_rating.deviation, &0.8722)
                 .epsilon(0.0001)
                 .eq()
         );
         assert!(
-            Relative::new(&new_player.volatility, &0.05999)
+            Relative::new(&new_rating.volatility, &0.05999)
                 .epsilon(0.0001)
                 .eq()
         );
@@ -338,34 +359,34 @@ mod tests {
 
     #[test]
     fn test_glicko_glicko2_conversions() {
-        let example_player = GlickoPlayer {
-            rating: 1500.0,
-            rating_deviation: 200.0,
+        let example_player = GlickoRating {
+            value: 1500.0,
+            deviation: 200.0,
         };
-        let glicko2_player = Glicko2Player::from(example_player);
+        let glicko2_rating = Glicko2Rating::from(example_player);
         assert!(
-            Relative::new(&glicko2_player.rating, &0.0)
+            Relative::new(&glicko2_rating.value, &0.0)
                 .epsilon(0.0001)
                 .eq()
         );
         assert!(
-            Relative::new(&glicko2_player.rating_deviation, &1.1513)
+            Relative::new(&glicko2_rating.deviation, &1.1513)
                 .epsilon(0.0001)
                 .eq()
         );
         assert!(
-            Relative::new(&glicko2_player.volatility, &0.06)
+            Relative::new(&glicko2_rating.volatility, &0.06)
                 .epsilon(0.0001)
                 .eq()
         );
-        let glicko_player = GlickoPlayer::from(glicko2_player);
+        let glicko_rating = GlickoRating::from(glicko2_rating);
         assert!(
-            Relative::new(&glicko_player.rating, &1500.0)
+            Relative::new(&glicko_rating.value, &1500.0)
                 .epsilon(0.0001)
                 .eq()
         );
         assert!(
-            Relative::new(&glicko_player.rating_deviation, &200.0)
+            Relative::new(&glicko_rating.deviation, &200.0)
                 .epsilon(0.0001)
                 .eq()
         );
