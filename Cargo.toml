@@ -6,6 +6,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/DenialAdams/glicko2"
 description = "Implementation of the glicko2 rating system"
 categories = ["algorithms"]
+keywords = ["glicko", "elo", "rating", "skill"]
 
 [dev-dependencies]
 approx = "0.1.1"
