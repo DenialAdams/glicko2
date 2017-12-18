@@ -1,10 +1,20 @@
+#![deny(missing_docs)]
+
+//! An implementation of the [glicko2 rating system](http://www.glicko.net/glicko/glicko2.pdf). It's a rating system appropriate for rating a team or player and is leveraged by many chess leagues.
+//!
+//! To use, create a series of [`GameResult`](struct.GameResult.html) for each player in a rating period. Then, for each player pass their [`Glicko2Rating`](struct.Glicko2Rating) and list of `GameResult`s
+//! to [`new_rating`](fn.new_rating.html) to calculate the new rating for that player, which can be saved in place of the old one. This process is then repeated each rating period.
+
 const CONVERGENCE_TOLERANCE: f64 = 0.000001;
 
 /// Represents the rating of a player or team on the Glicko2 scale.
 #[derive(Clone, Copy, Debug)]
 pub struct Glicko2Rating {
+    /// The estimated skill of the team or player.
     pub value: f64,
+    /// The uncertainty of the rating value - a standard deviation, in statistical terms.
     pub deviation: f64,
+    /// The degree of expected fluctuation in a rating - this enhancement differentiates Glicko2 to Glicko.
     pub volatility: f64,
 }
 
@@ -14,7 +24,9 @@ pub struct Glicko2Rating {
 /// so it's common to convert ratings to the Glicko scale before display.
 #[derive(Clone, Copy, Debug)]
 pub struct GlickoRating {
+    /// The estimated skill of the team or player.
     pub value: f64,
+    /// The uncertainty of the rating value - a standard deviation, in statistical terms.
     pub deviation: f64,
 }
 
@@ -162,6 +174,9 @@ fn f(x: f64, delta: f64, rating_deviation: f64, v: f64, volatility: f64, sys_con
 }
 
 /// Calculates a new rating from an existing rating and a series of results.
+///
+/// If a player has not played in a rating period, new_rating should still be called
+/// with an empty slice so that the new rating deviation for that player is calculated.
 ///
 /// Unlike `GameResult`s, which can be constructed with a `Glicko2Rating` or a`GlickoRating`,
 /// `new_rating` requires a `Glicko2Rating`. This is because the volatility field present only in
