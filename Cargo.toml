@@ -9,5 +9,5 @@ categories = ["algorithms"]
 keywords = ["glicko", "elo", "rating", "skill"]
 
 [dev-dependencies]
-approx = "0.1.1"
+approx = "0.3.0"
 
