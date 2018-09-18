@@ -358,22 +358,11 @@ mod tests {
             value: 1700.0,
             deviation: 300.0,
         }));
+
         let new_rating = new_rating(example_player_rating, &results, 0.5);
-        assert!(
-            Relative::new(&new_rating.value, &-0.2069)
-                .epsilon(0.0001)
-                .eq()
-        );
-        assert!(
-            Relative::new(&new_rating.deviation, &0.8722)
-                .epsilon(0.0001)
-                .eq()
-        );
-        assert!(
-            Relative::new(&new_rating.volatility, &0.05999)
-                .epsilon(0.0001)
-                .eq()
-        );
+        assert!(Relative::default().epsilon(0.0001).eq(&new_rating.value, &-0.2069));
+        assert!(Relative::default().epsilon(0.0001).eq(&new_rating.deviation, &0.8722));
+        assert!(Relative::default().epsilon(0.0001).eq(&new_rating.volatility, &0.05999))
     }
 
     #[test]
@@ -382,32 +371,14 @@ mod tests {
             value: 1500.0,
             deviation: 200.0,
         };
+
         let glicko2_rating = Glicko2Rating::from(example_player);
-        assert!(
-            Relative::new(&glicko2_rating.value, &0.0)
-                .epsilon(0.0001)
-                .eq()
-        );
-        assert!(
-            Relative::new(&glicko2_rating.deviation, &1.1513)
-                .epsilon(0.0001)
-                .eq()
-        );
-        assert!(
-            Relative::new(&glicko2_rating.volatility, &0.06)
-                .epsilon(0.0001)
-                .eq()
-        );
+        assert!(Relative::default().epsilon(0.0001).eq(&glicko2_rating.value, &0.0));
+        assert!(Relative::default().epsilon(0.0001).eq(&glicko2_rating.deviation, &1.1513));
+        assert!(Relative::default().epsilon(0.0001).eq(&glicko2_rating.volatility, &0.06));
+
         let glicko_rating = GlickoRating::from(glicko2_rating);
-        assert!(
-            Relative::new(&glicko_rating.value, &1500.0)
-                .epsilon(0.0001)
-                .eq()
-        );
-        assert!(
-            Relative::new(&glicko_rating.deviation, &200.0)
-                .epsilon(0.0001)
-                .eq()
-        );
+        assert!(Relative::default().epsilon(0.0001).eq(&glicko_rating.value, &1500.0));
+        assert!(Relative::default().epsilon(0.0001).eq(&glicko_rating.deviation, &200.0));
     }
 }
