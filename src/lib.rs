@@ -42,8 +42,6 @@ pub struct GameResult {
     // GLICKO2
     opponent_rating_value: f64,
     opponent_rating_deviation: f64,
-    // TODO: by using an enum instead of a float (as we only care about 0, 0.5, 1.0)
-    // we can save 7 bytes per struct
     score: f64,
 }
 
