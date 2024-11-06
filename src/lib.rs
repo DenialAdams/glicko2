@@ -237,7 +237,7 @@ pub fn new_rating(
             let delta_squared = delta * delta;
             let rd_squared = prior_rating.deviation * prior_rating.deviation;
             let mut b = if delta_squared > rd_squared + v {
-                delta_squared - rd_squared - v
+                (delta_squared - rd_squared - v).ln()
             } else {
                 let mut k = 1.0;
                 while f(
@@ -281,7 +281,7 @@ pub fn new_rating(
                     sys_constant,
                 );
                 // b
-                if fc * fb < 0.0 {
+                if fc * fb <= 0.0 {
                     a = b;
                     fa = fb;
                 } else {
